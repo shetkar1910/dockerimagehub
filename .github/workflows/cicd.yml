@@ -11,7 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      # Step to list files in the repository to verify Dockerfile is present
+      - name: List files in the repository
+        run: ls -R
+
       - name: Build The Docker Image
+        # Update the Dockerfile path if it's in a subdirectory, e.g., ./subdir/Dockerfile
         run: docker build . --file Dockerfile --tag workflow-test:$(date +%s)
 
   build-and-test:
@@ -51,13 +57,12 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push Docker image
-        id: docker_build
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./Dockerfile
+          file: ./Dockerfile  # Make sure the Dockerfile path is correct
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/flasktest-app:latest
 
       - name: Image digest
-        run: echo ${{ steps.docker_build.outputs.digest }}
+        run: echo ${{ steps.build-and-publish.outputs.digest }}
